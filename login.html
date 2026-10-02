@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ระบบจองคิว ศูนย์พักใจ ม.พะเยา</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pine:#2E4A3D;
+    --pine-dark:#1F332A;
+    --sand:#FAF6EE;
+    --sand-deep:#F0E9D8;
+    --gold:#BD9A4F;
+    --ink:#2B2A26;
+    --ink-soft:#6B6558;
+    --rose:#B4524A;
+    --line:#E3DBC8;
+    --ok:#3E6B64;
+    --white:#FFFFFF;
+    --radius:10px;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --sand:#1B1912; --sand-deep:#242018; --ink:#EFE9DA; --ink-soft:#B4AC98;
+      --white:#221F17; --line:#3A3423; --pine:#7FB39B; --pine-dark:#9FCCB4;
+    }
+  }
+  :root[data-theme="dark"]{
+    --sand:#1B1912; --sand-deep:#242018; --ink:#EFE9DA; --ink-soft:#B4AC98;
+    --white:#221F17; --line:#3A3423; --pine:#7FB39B; --pine-dark:#9FCCB4;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-padding-top: env(safe-area-inset-top, 0px);}
+  body{
+    margin:0; background:var(--sand); color:var(--ink);
+    font-family:'Sarabun',sans-serif; line-height:1.6;
+    min-height:100%;
+  }
+  h1,h2,h3,.serif{font-family:'Noto Serif Thai',serif;}
+  .app{max-width:760px;margin:0 auto;padding:0 18px 60px;}
+  header.top{
+    padding:28px 0 18px; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+  header.top .brand{display:flex; align-items:center; gap:12px;}
+  header.top .mark{
+    width:40px;height:40px;border-radius:50%;
+    background:var(--pine); flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+  }
+  header.top .mark svg{width:20px;height:20px;}
+  header.top .name{font-size:1.15rem; font-weight:600; color:var(--pine);}
+  header.top .sub{font-size:.82rem; color:var(--ink-soft);}
+  header.top .who{font-size:.85rem; color:var(--ink-soft); text-align:right;}
+  .profile-btn{
+    width:42px; height:42px; border-radius:50%; background:var(--pine);
+    border:none; cursor:pointer; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .profile-btn svg{width:22px;height:22px;}
+  .profile-btn:hover{filter:brightness(1.1);}
+
+  nav.tabs{
+    display:flex; gap:4px; margin:20px 0 22px;
+    border-bottom:1px solid var(--line);
+    overflow-x:auto;
+  }
+  nav.tabs button{
+    background:none;border:none; font-family:'Sarabun',sans-serif;
+    font-size:.95rem; color:var(--ink-soft); padding:10px 6px 12px;
+    cursor:pointer; white-space:nowrap; border-bottom:2px solid transparent;
+    margin-right:18px;
+  }
+  nav.tabs button.active{color:var(--pine); border-color:var(--pine); font-weight:600;}
+
+  section.view{display:none;}
+  section.view.active{display:block;}
+
+  .card{
+    background:var(--white); border:1px solid var(--line);
+    border-radius:var(--radius); padding:20px;
+  }
+  .empty{
+    border:1px dashed var(--line); border-radius:var(--radius);
+    padding:28px 20px; text-align:center; color:var(--ink-soft);
+  }
+  .empty .big{font-size:1.4rem; margin-bottom:6px; color:var(--ink);}
+
+  /* Home */
+  .hero-label{font-size:.82rem; color:var(--ink-soft); margin-bottom:6px;}
+  .next-card{
+    background:linear-gradient(160deg,var(--pine),var(--pine-dark));
+    color:var(--sand); border-radius:14px; padding:24px; margin-bottom:26px;
+  }
+  .next-card .status-pill{
+    display:inline-block; font-size:.75rem; padding:3px 10px; border-radius:20px;
+    background:rgba(255,255,255,.15); margin-bottom:12px;
+  }
+  .next-card .date{font-size:1.3rem; font-weight:600; margin:0 0 2px;}
+  .next-card .time{font-size:.95rem; opacity:.9; margin:0 0 14px;}
+  .next-card .counselor{font-size:.9rem; opacity:.85; margin-bottom:18px;}
+  .next-card .actions{display:flex; gap:10px; flex-wrap:wrap;}
+
+  button.btn{
+    font-family:'Sarabun',sans-serif; font-size:.9rem; font-weight:600;
+    padding:9px 16px; border-radius:8px; border:1px solid transparent;
+    cursor:pointer;
+  }
+  .btn-primary{background:var(--gold); color:#2B2409;}
+  .btn-primary:hover{filter:brightness(1.05);}
+  .btn-ghost{background:transparent; border-color:rgba(255,255,255,.5); color:var(--sand);}
+  .btn-ghost:hover{background:rgba(255,255,255,.1);}
+  .btn-outline{background:transparent; border-color:var(--line); color:var(--ink);}
+  .btn-outline:hover{border-color:var(--pine); color:var(--pine);}
+  .btn-danger{background:transparent; border-color:var(--rose); color:var(--rose);}
+  .btn-danger:hover{background:var(--rose); color:#fff;}
+  .btn-block{width:100%;}
+  .btn:disabled{opacity:.45; cursor:not-allowed;}
+
+  .quick-actions{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:26px;}
+  .quick-actions .qa{
+    border:1px solid var(--line); border-radius:var(--radius); padding:16px;
+    cursor:pointer; background:var(--white);
+  }
+  .quick-actions .qa:hover{border-color:var(--pine);}
+  .quick-actions .qa .t{font-weight:600; margin-bottom:3px;}
+  .quick-actions .qa .d{font-size:.8rem; color:var(--ink-soft);}
+
+  h3.section-h{font-size:1rem; margin:0 0 12px; color:var(--ink-soft); font-weight:600; font-family:'Sarabun',sans-serif;}
+
+  /* Booking */
+  .counselor-list{display:flex; flex-direction:column; gap:14px;}
+  .counselor{border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;}
+  .counselor .head{
+    display:flex; align-items:center; gap:12px; padding:14px 16px;
+    cursor:pointer; background:var(--white);
+  }
+  .counselor .avatar{
+    width:38px;height:38px;border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:600; font-size:.9rem;
+  }
+  .counselor .info{flex:1;}
+  .counselor .info .name{font-weight:600;}
+  .counselor .info .spec{font-size:.8rem; color:var(--ink-soft);}
+  .counselor .chevron{transition:transform .15s; color:var(--ink-soft);}
+  .counselor.open .chevron{transform:rotate(180deg);}
+  .counselor .body{display:none; padding:0 16px 16px; border-top:1px solid var(--line);}
+  .counselor.open .body{display:block;}
+
+  .day-tabs{display:flex; gap:6px; overflow-x:auto; padding:14px 0 12px;}
+  .day-tabs button{
+    flex-shrink:0; border:1px solid var(--line); background:var(--white);
+    border-radius:8px; padding:7px 12px; font-size:.8rem; cursor:pointer;
+    font-family:'Sarabun',sans-serif; color:var(--ink);
+  }
+  .day-tabs button.active{background:var(--pine); border-color:var(--pine); color:#fff;}
+  .slot-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(84px,1fr)); gap:8px;}
+  .slot{
+    border:1px solid var(--line); border-radius:8px; padding:9px 4px;
+    text-align:center; font-size:.85rem; cursor:pointer; background:var(--white);
+  }
+  .slot:hover{border-color:var(--pine); color:var(--pine);}
+  .slot.full{opacity:.4; cursor:not-allowed; text-decoration:line-through;}
+  .no-slots{color:var(--ink-soft); font-size:.85rem; padding:10px 0;}
+
+  /* My bookings */
+  .booking-item{
+    border:1px solid var(--line); border-radius:var(--radius); padding:16px;
+    margin-bottom:12px;
+  }
+  .booking-item .row1{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+  .booking-item .date{font-weight:600;}
+  .booking-item .counselor{font-size:.85rem; color:var(--ink-soft); margin-top:2px;}
+  .badge{font-size:.72rem; padding:3px 9px; border-radius:20px; white-space:nowrap;}
+  .badge.confirmed{background:#E4EEE9; color:var(--ok);}
+  .badge.cancelled{background:#F3E4E2; color:var(--rose);}
+  .badge.completed{background:var(--sand-deep); color:var(--ink-soft);}
+  .booking-item .actions{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;}
+  .filter-row{display:flex; gap:8px; margin-bottom:16px;}
+  .filter-row button{
+    border:1px solid var(--line); background:var(--white); border-radius:20px;
+    padding:6px 14px; font-size:.82rem; cursor:pointer; font-family:'Sarabun',sans-serif;
+  }
+  .filter-row button.active{background:var(--pine); color:#fff; border-color:var(--pine);}
+
+  /* Modal */
+  .overlay{
+    position:fixed; inset:0; background:rgba(20,18,10,.45);
+    display:none; align-items:flex-end; justify-content:center; z-index:50;
+    padding: env(safe-area-inset-bottom,0px) 0 0;
+  }
+  .overlay.show{display:flex;}
+  @media (min-width:520px){ .overlay{align-items:center;} }
+  .modal{
+    background:var(--white); width:100%; max-width:420px;
+    border-radius:16px 16px 0 0; padding:22px; max-height:88vh; overflow-y:auto;
+  }
+  @media (min-width:520px){ .modal{border-radius:16px;} }
+  .modal h3{margin:0 0 4px;}
+  .modal .muted{color:var(--ink-soft); font-size:.85rem; margin-bottom:18px;}
+  .modal .actions{display:flex; gap:10px; margin-top:18px;}
+  .toast{
+    position:fixed; bottom:calc(20px + env(safe-area-inset-bottom,0px)); left:50%; transform:translateX(-50%);
+    background:var(--pine-dark); color:#fff; padding:11px 20px; border-radius:30px;
+    font-size:.85rem; z-index:60; opacity:0; transition:opacity .25s, transform .25s; pointer-events:none;
+  }
+  .toast.show{opacity:1;}
+  footer.note{margin-top:30px; font-size:.78rem; color:var(--ink-soft); text-align:center;}
+
+  /* Login */
+  #loginScreen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:24px; background:linear-gradient(160deg,var(--pine),var(--pine-dark));
+  }
+  .login-card{
+    width:100%; max-width:380px; background:var(--white); border-radius:16px;
+    padding:32px 28px; box-shadow:0 20px 50px rgba(0,0,0,.25);
+  }
+  .login-card .mark{
+    width:48px;height:48px;border-radius:50%; background:var(--pine);
+    display:flex; align-items:center; justify-content:center; margin-bottom:16px;
+  }
+  .login-card .mark svg{width:24px;height:24px;}
+  .login-card h1{font-size:1.3rem; margin:0 0 4px;}
+  .login-card .sub{color:var(--ink-soft); font-size:.85rem; margin-bottom:24px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:.82rem; color:var(--ink-soft); margin-bottom:6px;}
+  .field input{
+    width:100%; font-family:'Sarabun',sans-serif; font-size:.95rem;
+    padding:11px 13px; border:1px solid var(--line); border-radius:8px;
+    background:var(--sand); color:var(--ink);
+  }
+  .field input:focus{outline:2px solid var(--pine); outline-offset:1px;}
+  .login-error{
+    background:#F3E4E2; color:var(--rose); font-size:.82rem;
+    padding:9px 12px; border-radius:8px; margin-bottom:16px; display:none;
+  }
+  .login-error.show{display:block;}
+  .login-foot{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:18px; font-size:.82rem;
+  }
+  .login-foot a{color:var(--pine); text-decoration:none; cursor:pointer;}
+  .login-foot a:hover{text-decoration:underline;}
+  .login-hint{font-size:.76rem; color:var(--ink-soft); margin-top:18px; border-top:1px solid var(--line); padding-top:14px;}
+  #loginScreen.hidden, .app.hidden{display:none;}
+</style>
+</head>
+<body>
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.2 2 4.5 5.6 4c2-.3 3.7.6 4.9 2.2C11.7 4.6 13.4 3.7 15.4 4 19 4.5 20.6 8.2 19 11.7 16.5 16.4 12 21 12 21z" fill="#FAF6EE"/></svg></div>
+    <h1 class="serif">เข้าสู่ระบบ</h1>
+    <div class="sub">ระบบจองคิวศูนย์พักใจ มหาวิทยาลัยพะเยา</div>
+    <div class="login-error" id="loginError">กรุณากรอกรหัสนิสิตและรหัสผ่านให้ครบถ้วน</div>
+    <form id="loginForm">
+      <div class="field">
+        <label for="loginId">รหัสนิสิต / อีเมลมหาวิทยาลัย</label>
+        <input type="text" id="loginId" placeholder="68026451 หรือ name@up.ac.th" autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="loginPw">รหัสผ่าน</label>
+        <input type="password" id="loginPw" placeholder="รหัสผ่านบัญชีมหาวิทยาลัย" autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">เข้าสู่ระบบ</button>
+    </form>
+    <div class="login-foot">
+      <a id="forgotPw">ลืมรหัสผ่าน?</a>
+      <span style="color:var(--ink-soft)">เข้าสู่ระบบด้วยบัญชีมหาวิทยาลัย</span>
+    </div>
+    <div class="login-hint">ตัวอย่างสาธิต: กรอกรหัสนิสิตและรหัสผ่านอะไรก็ได้เพื่อเข้าสู่ระบบ</div>
+  </div>
+</div>
+
+<div class="app hidden" id="mainApp">
+  <header class="top">
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.2 2 4.5 5.6 4c2-.3 3.7.6 4.9 2.2C11.7 4.6 13.4 3.7 15.4 4 19 4.5 20.6 8.2 19 11.7 16.5 16.4 12 21 12 21z" fill="#FAF6EE"/></svg></div>
+      <div>
+        <div class="name serif">ศูนย์พักใจ</div>
+        <div class="sub">ระบบจองคิว · มหาวิทยาลัยพะเยา</div>
+      </div>
+    </div>
+    <button class="profile-btn" id="profileBtn" title="โปรไฟล์" aria-label="เปิดโปรไฟล์ของฉัน">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.5" r="3.5" fill="#FAF6EE"/><path d="M4.5 19c1.4-3.3 4.3-5 7.5-5s6.1 1.7 7.5 5" stroke="#FAF6EE" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+  </header>
+
+  <nav class="tabs">
+    <button data-view="home" class="active">หน้าหลัก</button>
+    <button data-view="book">จองคิว</button>
+    <button data-view="mine">การจองของฉัน</button>
+  </nav>
+
+  <!-- HOME -->
+  <section class="view active" id="view-home">
+    <div class="hero-label">การนัดครั้งถัดไป</div>
+    <div id="nextAppointment"></div>
+
+    <div class="quick-actions">
+      <div class="qa" data-goto="book">
+        <div class="t">ตรวจสอบเวลาว่าง</div>
+        <div class="d">ดูตารางว่างของผู้ให้คำปรึกษาแต่ละท่าน</div>
+      </div>
+      <div class="qa" data-goto="mine">
+        <div class="t">เลื่อน / ยกเลิกนัด</div>
+        <div class="d">จัดการการจองที่มีอยู่ของคุณ</div>
+      </div>
+    </div>
+
+    <h3 class="section-h">ประวัติล่าสุด</h3>
+    <div id="recentHistory"></div>
+  </section>
+
+  <!-- BOOK -->
+  <section class="view" id="view-book">
+    <h3 class="section-h">เลือกผู้ให้คำปรึกษาเพื่อดูวันว่าง</h3>
+    <div class="counselor-list" id="counselorList"></div>
+  </section>
+
+  <!-- MINE -->
+  <section class="view" id="view-mine">
+    <div class="filter-row">
+      <button data-filter="upcoming" class="active">กำลังจะถึง</button>
+      <button data-filter="all">ทั้งหมด</button>
+      <button data-filter="cancelled">ยกเลิกแล้ว</button>
+    </div>
+    <div id="bookingList"></div>
+  </section>
+
+  <footer class="note">ข้อมูลทั้งหมดในหน้านี้เป็นข้อมูลจำลองเพื่อสาธิตการทำงาน บันทึกไว้เฉพาะในเบราว์เซอร์ของคุณ</footer>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modalBody"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const COUNSELORS = [
+    {id:'c1', name:'อ.ดร.ธีรภัทร วัฒนสิน', spec:'การปรับตัวและความเครียด', color:'#2E4A3D'},
+    {id:'c2', name:'อาจารย์พิมพ์ชนก วงศ์ทอง', spec:'ความสัมพันธ์และครอบครัว', color:'#5E7A6B'},
+    {id:'c3', name:'อาจารย์กันตพงศ์ ศรีบุญเรือง', spec:'การเรียนและการวางแผนชีวิต', color:'#BD9A4F'},
+  ];
+  const TIMES = ['09:00','10:00','11:00','13:00','14:00','15:00'];
+  const DAY_NAMES = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+
+  const store = {
+    get(k, fallback){ try{ const v = localStorage.getItem(k); return v? JSON.parse(v): fallback; }catch(e){ return fallback; } },
+    set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  };
+
+  // Generate 14 upcoming weekdays
+  function upcomingDays(n){
+    const days = []; let d = new Date(); let i=0;
+    while(days.length < n){
+      const dt = new Date(d); dt.setDate(d.getDate()+i); i++;
+      if(dt.getDay()!==0 && dt.getDay()!==6) days.push(dt);
+    }
+    return days;
+  }
+  const DAYS = upcomingDays(10);
+  function dkey(dt){ return dt.toISOString().slice(0,10); }
+  function fmtDate(dt){ return dt.toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'}); }
+  function fmtDateShort(dt){ return dt.toLocaleDateString('th-TH',{day:'numeric',month:'short'}); }
+
+  // seed booked-out slots deterministically so the demo feels populated
+  function seedFull(counselorId, dateKey, time){
+    let h = 0; const s = counselorId+dateKey+time;
+    for(let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) % 997;
+    return h % 5 === 0; // ~20% pre-filled
+  }
+
+  // ---------- Auth ----------
+  function showApp(){
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('mainApp').classList.remove('hidden');
+    render();
+  }
+  function showLogin(){
+    document.getElementById('mainApp').classList.add('hidden');
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('loginId').value = '';
+    document.getElementById('loginPw').value = '';
+    document.getElementById('loginError').classList.remove('show');
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const id = document.getElementById('loginId').value.trim();
+    const pw = document.getElementById('loginPw').value.trim();
+    if(!id || !pw){
+      document.getElementById('loginError').classList.add('show');
+      return;
+    }
+    store.set('jkj_user', {id});
+    showApp();
+    toast('เข้าสู่ระบบสำเร็จ');
+  });
+
+  document.getElementById('forgotPw').addEventListener('click', function(){
+    toast('ระบบจะพาไปยังหน้ากู้คืนบัญชีของมหาวิทยาลัย');
+  });
+
+  document.getElementById('profileBtn').addEventListener('click', openProfile);
+
+  function openProfile(){
+    const user = store.get('jkj_user', null);
+    const uid = user && user.id ? user.id : '-';
+    openModal(`
+      <div style="text-align:center; margin-bottom:24px;">
+        <div class="mark" style="width:64px;height:64px;margin:0 auto 12px;">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.5" r="3.5" fill="#FAF6EE"/><path d="M4.5 19c1.4-3.3 4.3-5 7.5-5s6.1 1.7 7.5 5" stroke="#FAF6EE" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <h3 class="serif" style="margin-bottom:2px;">${uid}</h3>
+        <div class="muted" style="margin-bottom:0;">นิสิตมหาวิทยาลัยพะเยา</div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-outline btn-block" id="mProfileClose">ปิด</button>
+        <button class="btn btn-danger btn-block" id="mProfileLogout">ออกจากระบบ</button>
+      </div>
+    `);
+    document.getElementById('mProfileClose').addEventListener('click', closeModal);
+    document.getElementById('mProfileLogout').addEventListener('click', openLogoutConfirm);
+  }
+
+  function openLogoutConfirm(){
+    openModal(`
+      <h3 class="serif">ออกจากระบบ</h3>
+      <p class="muted">คุณต้องการออกจากระบบใช่หรือไม่</p>
+      <div class="actions">
+        <button class="btn btn-outline btn-block" id="mLogoutCancel">ยกเลิก</button>
+        <button class="btn btn-danger btn-block" id="mLogoutConfirm">ออกจากระบบ</button>
+      </div>
+    `);
+    document.getElementById('mLogoutCancel').addEventListener('click', closeModal);
+    document.getElementById('mLogoutConfirm').addEventListener('click', function(){
+      localStorage.removeItem('jkj_user');
+      closeModal();
+      showLogin();
+    });
+  }
+
+  let bookings = store.get('jkj_bookings', null);
+  if(!bookings){
+    // seed one upcoming confirmed booking for demo
+    const d = DAYS[2];
+    bookings = [{
+      id: 'bk_seed1', counselorId:'c1', date: dkey(d), time:'10:00',
+      status:'confirmed', createdAt: Date.now()
+    }];
+    store.set('jkj_bookings', bookings);
+  }
+  function saveBookings(){ store.set('jkj_bookings', bookings); }
+
+  function isSlotTaken(counselorId, dateKey, time, excludeId){
+    if(bookings.some(b=> b.counselorId===counselorId && b.date===dateKey && b.time===time && b.status==='confirmed' && b.id!==excludeId)) return true;
+    if(seedFull(counselorId, dateKey, time)) return true;
+    return false;
+  }
+
+  function counselorName(id){ const c = COUNSELORS.find(x=>x.id===id); return c? c.name : '-'; }
+  function counselorObj(id){ return COUNSELORS.find(x=>x.id===id); }
+
+  // ---------- Views ----------
+  const tabs = document.querySelectorAll('nav.tabs button');
+  tabs.forEach(t=> t.addEventListener('click', ()=> showView(t.dataset.view)));
+  document.querySelectorAll('.qa').forEach(q=> q.addEventListener('click', ()=> showView(q.dataset.goto)));
+
+  function showView(name){
+    document.querySelectorAll('.view').forEach(v=> v.classList.remove('active'));
+    document.getElementById('view-'+name).classList.add('active');
+    tabs.forEach(t=> t.classList.toggle('active', t.dataset.view===name));
+    render();
+  }
+
+  function toast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(()=> t.classList.remove('show'), 2200);
+  }
+
+  function closeModal(){ document.getElementById('overlay').classList.remove('show'); document.getElementById('modalBody').innerHTML=''; }
+  function openModal(html){ document.getElementById('modalBody').innerHTML = html; document.getElementById('overlay').classList.add('show'); }
+  document.getElementById('overlay').addEventListener('click', e=>{ if(e.target.id==='overlay') closeModal(); });
+
+  // ---------- Home ----------
+  function renderHome(){
+    const upcoming = bookings.filter(b=>b.status==='confirmed').sort((a,b)=> (a.date+a.time).localeCompare(b.date+b.time))[0];
+    const box = document.getElementById('nextAppointment');
+    if(!upcoming){
+      box.innerHTML = `<div class="empty"><div class="big">ยังไม่มีนัดหมาย</div>ตรวจสอบเวลาว่างและจองคิวได้เลย
+        <div style="margin-top:16px;"><button class="btn btn-primary" id="goBookEmpty">จองคิวตอนนี้</button></div>
+      </div>`;
+      document.getElementById('goBookEmpty').addEventListener('click', ()=> showView('book'));
+    } else {
+      const c = counselorObj(upcoming.counselorId);
+      const dt = new Date(upcoming.date);
+      box.innerHTML = `<div class="next-card">
+        <span class="status-pill">ยืนยันแล้ว</span>
+        <p class="date serif">${fmtDate(dt)}</p>
+        <p class="time">เวลา ${upcoming.time} น.</p>
+        <p class="counselor">ผู้ให้คำปรึกษา: ${c.name}</p>
+        <div class="actions">
+          <button class="btn btn-ghost" data-act="reschedule" data-id="${upcoming.id}">เลื่อนนัด</button>
+          <button class="btn btn-ghost" data-act="cancel" data-id="${upcoming.id}">ยกเลิกนัด</button>
+        </div>
+      </div>`;
+      box.querySelector('[data-act="reschedule"]').addEventListener('click', ()=> openReschedule(upcoming.id));
+      box.querySelector('[data-act="cancel"]').addEventListener('click', ()=> openCancel(upcoming.id));
+    }
+
+    const hist = bookings.slice().sort((a,b)=> b.createdAt-a.createdAt).slice(0,3);
+    const histBox = document.getElementById('recentHistory');
+    if(hist.length===0){ histBox.innerHTML = `<div class="empty">ยังไม่มีประวัติการจอง</div>`; }
+    else {
+      histBox.innerHTML = hist.map(b=>{
+        const dt = new Date(b.date);
+        return `<div class="booking-item">
+          <div class="row1">
+            <div><div class="date">${fmtDate(dt)} · ${b.time} น.</div>
+            <div class="counselor">${counselorName(b.counselorId)}</div></div>
+            <span class="badge ${b.status}">${statusLabel(b.status)}</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  function statusLabel(s){
+    return s==='confirmed' ? 'ยืนยันแล้ว' : s==='cancelled' ? 'ยกเลิกแล้ว' : 'เสร็จสิ้น';
+  }
+
+  // ---------- Book ----------
+  let openCounselorId = null;
+  let selectedDayIdx = 0;
+
+  function renderCounselorList(){
+    const wrap = document.getElementById('counselorList');
+    wrap.innerHTML = COUNSELORS.map(c=>{
+      const initials = c.name.replace('อ.ดร.','').replace('อาจารย์','').trim().split(' ').map(s=>s[0]).slice(0,2).join('');
+      return `<div class="counselor ${openCounselorId===c.id?'open':''}" data-id="${c.id}">
+        <div class="head">
+          <div class="avatar" style="background:${c.color}">${initials}</div>
+          <div class="info"><div class="name">${c.name}</div><div class="spec">${c.spec}</div></div>
+          <div class="chevron">▾</div>
+        </div>
+        <div class="body">
+          <div class="day-tabs" data-cid="${c.id}"></div>
+          <div class="slot-grid" data-cid="${c.id}"></div>
+        </div>
+      </div>`;
+    }).join('');
+
+    wrap.querySelectorAll('.head').forEach(h=> h.addEventListener('click', ()=>{
+      const id = h.parentElement.dataset.id;
+      openCounselorId = openCounselorId===id ? null : id;
+      selectedDayIdx = 0;
+      renderCounselorList();
+    }));
+
+    if(openCounselorId){
+      renderDayTabs(openCounselorId);
+      renderSlots(openCounselorId);
+    }
+  }
+
+  function renderDayTabs(cid){
+    const el = document.querySelector(`.day-tabs[data-cid="${cid}"]`);
+    if(!el) return;
+    el.innerHTML = DAYS.map((d,i)=> `<button data-i="${i}" class="${i===selectedDayIdx?'active':''}">${DAY_NAMES[d.getDay()]} ${fmtDateShort(d)}</button>`).join('');
+    el.querySelectorAll('button').forEach(b=> b.addEventListener('click', ()=>{
+      selectedDayIdx = parseInt(b.dataset.i);
+      renderDayTabs(cid); renderSlots(cid);
+    }));
+  }
+
+  function renderSlots(cid){
+    const el = document.querySelector(`.slot-grid[data-cid="${cid}"]`);
+    if(!el) return;
+    const day = DAYS[selectedDayIdx];
+    const key = dkey(day);
+    el.innerHTML = TIMES.map(t=>{
+      const taken = isSlotTaken(cid, key, t);
+      return `<div class="slot ${taken?'full':''}" data-t="${t}">${t}</div>`;
+    }).join('');
+    el.querySelectorAll('.slot:not(.full)').forEach(s=> s.addEventListener('click', ()=> openBookConfirm(cid, key, s.dataset.t)));
+  }
+
+  function openBookConfirm(cid, dateKey, time){
+    const c = counselorObj(cid);
+    const dt = new Date(dateKey);
+    openModal(`
+      <h3 class="serif">ยืนยันการจอง</h3>
+      <p class="muted">ตรวจสอบรายละเอียดก่อนยืนยันคิวของคุณ</p>
+      <div class="card" style="margin-bottom:6px;">
+        <div style="margin-bottom:8px;"><strong>${fmtDate(dt)}</strong> · ${time} น.</div>
+        <div style="color:var(--ink-soft); font-size:.9rem;">ผู้ให้คำปรึกษา: ${c.name}</div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-outline btn-block" id="mCancel">ยกเลิก</button>
+        <button class="btn btn-primary btn-block" id="mConfirm">ยืนยันการจอง</button>
+      </div>
+    `);
+    document.getElementById('mCancel').addEventListener('click', closeModal);
+    document.getElementById('mConfirm').addEventListener('click', ()=>{
+      bookings.push({id:'bk_'+Date.now(), counselorId:cid, date:dateKey, time, status:'confirmed', createdAt:Date.now()});
+      saveBookings(); closeModal(); toast('จองคิวสำเร็จ');
+      showView('home');
+    });
+  }
+
+  // ---------- My bookings ----------
+  let currentFilter = 'upcoming';
+  document.querySelectorAll('.filter-row button').forEach(b=> b.addEventListener('click', ()=>{
+    document.querySelectorAll('.filter-row button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); currentFilter = b.dataset.filter; renderBookingList();
+  }));
+
+  function renderBookingList(){
+    const list = document.getElementById('bookingList');
+    const todayKey = dkey(new Date());
+    let items = bookings.slice().sort((a,b)=> (b.date+b.time).localeCompare(a.date+a.time));
+    if(currentFilter==='upcoming') items = items.filter(b=> b.status==='confirmed' && b.date>=todayKey);
+    if(currentFilter==='cancelled') items = items.filter(b=> b.status==='cancelled');
+
+    if(items.length===0){ list.innerHTML = `<div class="empty">ไม่พบรายการในหมวดนี้</div>`; return; }
+
+    list.innerHTML = items.map(b=>{
+      const dt = new Date(b.date);
+      const canModify = b.status==='confirmed' && b.date >= todayKey;
+      return `<div class="booking-item">
+        <div class="row1">
+          <div><div class="date">${fmtDate(dt)} · ${b.time} น.</div>
+          <div class="counselor">${counselorName(b.counselorId)}</div></div>
+          <span class="badge ${b.status}">${statusLabel(b.status)}</span>
+        </div>
+        ${canModify ? `<div class="actions">
+          <button class="btn btn-outline" data-act="reschedule" data-id="${b.id}">เลื่อนนัด</button>
+          <button class="btn btn-danger" data-act="cancel" data-id="${b.id}">ยกเลิกนัด</button>
+        </div>` : ''}
+      </div>`;
+    }).join('');
+
+    list.querySelectorAll('[data-act="reschedule"]').forEach(btn=> btn.addEventListener('click', ()=> openReschedule(btn.dataset.id)));
+    list.querySelectorAll('[data-act="cancel"]').forEach(btn=> btn.addEventListener('click', ()=> openCancel(btn.dataset.id)));
+  }
+
+  function openCancel(id){
+    const b = bookings.find(x=>x.id===id);
+    const dt = new Date(b.date);
+    openModal(`
+      <h3 class="serif">ยกเลิกการนัดหมาย</h3>
+      <p class="muted">การยกเลิกต้องเป็นไปตามเงื่อนไขที่ศูนย์พักใจกำหนด คุณต้องการยกเลิกนัดวันที่ ${fmtDate(dt)} เวลา ${b.time} น. ใช่หรือไม่</p>
+      <div class="actions">
+        <button class="btn btn-outline btn-block" id="mBack">ไม่ยกเลิก</button>
+        <button class="btn btn-danger btn-block" id="mDo">ยืนยันการยกเลิก</button>
+      </div>
+    `);
+    document.getElementById('mBack').addEventListener('click', closeModal);
+    document.getElementById('mDo').addEventListener('click', ()=>{
+      b.status='cancelled'; saveBookings(); closeModal(); toast('ยกเลิกนัดหมายแล้ว'); render();
+    });
+  }
+
+  function openReschedule(id){
+    const b = bookings.find(x=>x.id===id);
+    const c = counselorObj(b.counselorId);
+    let dayIdx = 0;
+    function body(){
+      const day = DAYS[dayIdx]; const key = dkey(day);
+      return `
+        <h3 class="serif">เลื่อนการนัดหมาย</h3>
+        <p class="muted">เลือกวันและเวลาใหม่กับ ${c.name}</p>
+        <div class="day-tabs" id="rDays"></div>
+        <div class="slot-grid" id="rSlots"></div>
+        <div class="actions"><button class="btn btn-outline btn-block" id="mBack2">ปิด</button></div>
+      `;
+    }
+    openModal(body());
+    function paint(){
+      const dEl = document.getElementById('rDays');
+      dEl.innerHTML = DAYS.map((d,i)=> `<button data-i="${i}" class="${i===dayIdx?'active':''}">${DAY_NAMES[d.getDay()]} ${fmtDateShort(d)}</button>`).join('');
+      dEl.querySelectorAll('button').forEach(btn=> btn.addEventListener('click', ()=>{ dayIdx=parseInt(btn.dataset.i); paint(); }));
+      const key = dkey(DAYS[dayIdx]);
+      const sEl = document.getElementById('rSlots');
+      sEl.innerHTML = TIMES.map(t=>{
+        const taken = isSlotTaken(b.counselorId, key, t, b.id);
+        return `<div class="slot ${taken?'full':''}" data-t="${t}">${t}</div>`;
+      }).join('');
+      sEl.querySelectorAll('.slot:not(.full)').forEach(s=> s.addEventListener('click', ()=>{
+        b.date = key; b.time = s.dataset.t; saveBookings();
+        closeModal(); toast('เลื่อนนัดหมายสำเร็จ'); render();
+      }));
+      document.getElementById('mBack2').addEventListener('click', closeModal);
+    }
+    paint();
+  }
+
+  function render(){
+    renderHome();
+    renderCounselorList();
+    renderBookingList();
+  }
+
+  if(store.get('jkj_user', null)){ showApp(); } else { showLogin(); }
+})();
+</script>
+</body>
+</html>
