@@ -6,6 +6,7 @@
 <title>ระบบจองคิว ศูนย์พักใจ ม.พะเยา</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --pine: #2E4A3D;
@@ -511,6 +512,11 @@
 
 <script>
 (function(){
+  var bookings = [];
+  const SUPABASE_URL = 'https://nhlqmrjhzrzgiavaebwy.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_G_JRuDxjQWielphvHGvJFA_KV6tH-m-';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
   const COUNSELORS = [
     {id:'c1', name:'อ.ดร.ธีรภัทร วัฒนสิน', email:'theerapatW@up.ac.th', spec:'การปรับตัวและความเครียด', color:'#2E4A3D'},
     {id:'c2', name:'อาจารย์พิมพ์ชนก วงศ์ทอง', email:'testP@up.ac.th', spec:'ความสัมพันธ์และครอบครัว', color:'#5E7A6B'},
@@ -524,6 +530,49 @@
     set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
   };
 
+  // ฟังก์ชันดึงรายการจองคิวทั้งหมดจาก Supabase
+  async function fetchBookingsFromSupabase() {
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('ดึงข้อมูลการจองล้มเหลว:', error);
+      return [];
+    }
+
+    return data.map(b => ({
+      id: b.id,
+      counselorId: b.counselor_id,
+      studentName: b.student_name,
+      date: b.booking_date,
+      time: b.booking_time,
+      status: b.status,
+      createdAt: new Date(b.created_at).getTime()
+    }));
+    // โหลดข้อมูลการจองจาก Supabase เมื่อเปิดหน้าเว็บ
+  async function loadInitialBookings() {
+    bookings = await fetchBookingsFromSupabase();
+    if (typeof render === 'function') render();
+  }
+  loadInitialBookings();
+  // ฟังก์ชันอัปเดตสถานะคิวลง Supabase (สำหรับอาจารย์กดอนุมัติ/ปฏิเสธ)
+  async function updateStatus(id, newStatus){
+    const { data, error } = await supabase
+      .from('bookings')
+      .update({ status: newStatus })
+      .eq('id', id);
+
+    if (error) {
+      console.error('อัปเดตสถานะล้มเหลว:', error);
+      toast('เกิดข้อผิดพลาดในการอัปเดตสถานะ');
+    } else {
+      toast('อัปเดตสถานะเรียบร้อยแล้ว');
+      loadInitialBookings();
+    }
+  }
+  }
   function upcomingDays(n){
     const days = []; let d = new Date(); let i=0;
     while(days.length < n){
@@ -841,7 +890,6 @@
   }
 
   // ---------- Booking Data Store ----------
-  let bookings = store.get('jkj_bookings', null);
   if(!bookings || bookings.length < 5){
     const d0 = dkey(DAYS[0]);
     const d1 = dkey(DAYS[1]);
@@ -1202,20 +1250,33 @@
         <button class="btn btn-primary btn-block" id="mConfirmBtn">ส่งคำขอจองคิว</button>
       </div>
     `);
-    document.getElementById('mConfirmBtn').onclick = function(){
-      bookings.push({
-        id: 'bk_' + Date.now(),
-        counselorId: cid,
-        studentName: `นิสิต (${u ? u.id : 'ไม่ระบุตัวตน'})`,
-        date: dateStr,
-        time: time,
-        status: 'pending',
-        createdAt: Date.now()
-      });
-      saveBookings();
-      closeModal();
-      toast('ส่งคำขอจองคิวเรียบร้อย รออาจารย์อนุมัติ');
-      showView('mine');
+    document.getElementById('mConfirmBtn').onclick = async function(){
+      const { data, error } = await supabase
+        .from('bookings')
+        .insert([
+          {
+            user_id: u ? u.id : null,
+            counselor_id: cid,
+            student_name: `นิสิต (${u ? u.id : 'ไม่ระบุตัวตน'})`,
+            booking_date: dateStr,
+            booking_time: time,
+            status: 'pending'
+          }
+        ]);
+
+      if (error) {
+        console.error('Error inserting booking:', error);
+        toast('เกิดข้อผิดพลาดในการส่งคำขอจอง');
+      } else {
+        closeModal();
+        toast('ส่งคำขอจองคิวเรียบร้อย รออาจารย์อนุมัติ');
+        if (typeof renderBookings === 'function') {
+          renderBookings();
+        } else {
+          render();
+        }
+        showView('mine');
+      }
     };
   };
 
